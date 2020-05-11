@@ -1,7 +1,4 @@
-import struct
 import copy
-from bitstring import BitArray
-import binascii
 
 # 1 x 18
 PI_P_ARRAY = [0x243f6a88, 0x85a308d3, 0x13198a2e, 0x03707344, 0xa4093822, 0x299f31d0,
@@ -254,15 +251,6 @@ def decrypt_feystel(L, R, P, S):
 
 
 def text_to_bist(INPUT_TEXT):
-    # res = ''
-    # for char in INPUT_TEXT:
-    #     tmp = bin(ord(char))[2:]
-    #     tmp = '%08d' % int(tmp)
-    #     res += tmp
-    # return res
-    # bits = bin(int.from_bytes(INPUT_TEXT.encode(), 'big'))[2:]
-    # print(bits)
-    # return '{0:b}'.format(INPUT_TEXT)
     text = INPUT_TEXT
     text_bits = ""
     for char in range(len(text)):
@@ -310,42 +298,8 @@ def generateAllKey(P, S):
 
     return NEW_P, NEW_S
 
-    # NEW_P = []
-    # NEW_S = copy.deepcopy(PI_S_BOXES)
-    #
-    # NEW_P.append(feystel(L='{0:032b}'.format(0), R='{0:032b}'.format(0), P=P_box))
-    # print(NEW_P[0])
-    # print(NEW_P[0].bit_length())
-    # print(type(NEW_P[0]))
-    # for i in range(len(PI_P_ARRAY)):
-    #     NEW_P.append(feystel('{0:064b}'.format(NEW_P[i])[:32], '{0:064b}'.format(NEW_P[i])[32:], P_box))
-    #
-    # for i in range(len(PI_S_BOXES)):
-    #     for j in range(len(PI_S_BOXES[i])):
-    #         NEW_S[i][j] = feystel(L='{0:032b}'.format(0), R='{0:032b}'.format(0))
-
-    # tmp = []
-    # for i in range(0, 17, 2):
-    #     if not tmp:
-    #         tmp.append(feystel(L='{0:032b}'.format(0), R='{0:032b}'.format(0)))   #, P=NEW_P, S=NEW_S)
-    #     else:
-    #         tmp.append(feystel(tmp[0], tmp[1]))
-    #
-    #     NEW_P.append(tmp[0])
-    #     NEW_P.append(tmp[1])
-
-    # for i in range(4):
-    #     for j in range(0, 255, 2):
-    #         tmp = blowfishEncryptBlock(left32=tmp[0], right32=tmp[1], P=NEW_P, S=S)
-    #         NEW_S[i][j] = tmp[0]
-    #         NEW_S[i][j + 1] = tmp[1]
-
-    # return NEW_P, NEW_S    #, NEW_S
-
 
 def encryptFile(INPUT_TEXT, INPUT_KEY):
-    # Перевод текста в битувую строку
-    # text_bits = text_to_bist(INPUT_TEXT)
     text_bits = INPUT_TEXT
     # Перевод ключа в битовую строку
     key_bits = text_to_bist(INPUT_KEY)
@@ -356,46 +310,11 @@ def encryptFile(INPUT_TEXT, INPUT_KEY):
     # Создание новых раундовых ключей и таблицы подстановки, используя схему Фейстеля
     final_P_box, final_S_box = generateAllKey(new_P_box, PI_S_BOXES)
     encrypt_L, encrypt_R = feystel(text_bits[:32], text_bits[32:], final_P_box, final_S_box)
-    # print(encrypt_L.to_bytes(4, byteorder='big'))
-    # print(encrypt_R.to_bytes(4, byteorder='big'))
-    # print(encrypt_L.to_bytes(4, byteorder='big') + encrypt_R.to_bytes(4, byteorder='big'))
-
-    # mybyte = encrypt_L.to_bytes(4, byteorder='big') + encrypt_R.to_bytes(4, byteorder='big')
-    # binary_string = "{0:08b}".format(int(mybyte.hex(), 16))
-    # print(binary_string)
-    # print(len(binary_string))
-    # c = BitArray(hex=encrypt_L.to_bytes(4, byteorder='big') + encrypt_R.to_bytes(4, byteorder='big'))
-    # print(c.bin[2:])
-
-    # print('{0:032b}'.format(encrypt_L) + '{0:032b}'.format(encrypt_R))
-    # print(len('{0:032b}'.format(encrypt_L) + '{0:032b}'.format(encrypt_R)))
-    # print(int('{0:032b}'.format(encrypt_L) + '{0:032b}'.format(encrypt_R), 2))
-    # print('{0:032b}'.format(encrypt_L))
-    # decrypt_L, decrypt_R = decrypt_feystel(encrypt_L, encrypt_R, final_P_box, final_S_box)
-    #
-    # print(decrypt_L.to_bytes(4, byteorder='big').decode('UTF-8') + "" + decrypt_R.to_bytes(4, byteorder='big').decode('UTF-8'))
     return encrypt_L.to_bytes(4, byteorder='big') + encrypt_R.to_bytes(4, byteorder='big')
 
 
 def decryptFile(encryText, INPUT_KEY):
-    # Считывание зашифрованного текста
     encryBits = encryText
-    # print("encry = ", encryBits)
-    # print(len(encryBits))
-
-    # text_bits = ""
-    # for char in range(len(encryText)):
-    #     text_bits += '{0:b}'.format(ord(encryText[char]))
-    # print(text_bits)
-    # print(len(text_bits))
-
-    # b = ''
-    #
-    # while n > 0:
-    #     b = str(n % 2) + b
-    #     n = n // 2
-
-    # Перевод ключа в битовую строку
     key_bits = text_to_bist(INPUT_KEY)
     # Расишрение ключа
     new_key_bits = keyGenerator(key_bits)
@@ -405,11 +324,6 @@ def decryptFile(encryText, INPUT_KEY):
     final_P_box, final_S_box = generateAllKey(new_P_box, PI_S_BOXES)
     # Расшифрование
     decrypt_L, decrypt_R = decrypt_feystel(encryBits[:32], encryBits[32:], final_P_box, final_S_box)
-    # return '%i%i' % (decrypt_L, decrypt_R)
-    # print(decrypt_L.to_bytes(4, byteorder='big') + decrypt_R.to_bytes(4, byteorder='big'))
-    # print((decrypt_L.to_bytes(8, byteorder='big') + decrypt_R.to_bytes(8, byteorder='big')).decode('windows-1252'))
-    # return decrypt_L.to_bytes(4, byteorder='big').decode() + "" + decrypt_R.to_bytes(4, byteorder='big').decode()
-    # return decrypt_L.to_bytes(4, 'big') + decrypt_R.to_bytes(4, 'big')
     return '{0:032b}'.format(decrypt_L) + '{0:032b}'.format(decrypt_R)
 
 
@@ -432,13 +346,9 @@ def cipher_ECB(PATH_TEXT, PATH_KEY, PATH_ENCRY_FILE):
     while len(text_bits) % 64 != 0:
         text_bits += '0'
         count += 1
-    # print(count.to_bytes(1, 'big'))
-    # ll = "{0:08b}".format(int((count.to_bytes(1, 'big')).hex(), 16))
-    # print(ll)
 
     blocks_text = division_into_blocks(text_bits, 64)
 
-    # OUTPUT_ENCRY_FILE = "/Users/truffy/Documents/Python/projects/blowfishLab/encry_text.txt"
     output_encry_text = open(PATH_ENCRY_FILE, 'wb')
     for block in blocks_text:
         encryText = encryptFile(block, INPUT_KEY)
@@ -455,7 +365,6 @@ def decipher_ECB(PATH_ENCRY_FILE, PATH_KEY, PATH_DECRYPT_FILE):
 
     input_encry_file = open(PATH_ENCRY_FILE, 'rb')
     encryText = input_encry_file.read()
-    # print(encryText)
     encryBits = "{0:08b}".format(int(encryText.hex(), 16))
     # len_of_zero = encryBits[len(encryBits) - 8:]
     # encryBits = encryBits[:-8]
@@ -465,32 +374,7 @@ def decipher_ECB(PATH_ENCRY_FILE, PATH_KEY, PATH_DECRYPT_FILE):
     blocks = division_into_blocks(encryBits, 64)
     for block in blocks:
         decrypt_text = decryptFile(block, INPUT_KEY)
-
-        # print(" block = {0}, decrypt_text = {1}".format(block, decrypt_text))
-        # print((int(decrypt_text, 2).to_bytes(8, 'big')).decode())
-        # print("decrypt_text = ", decrypt_text)
-        # if block != blocks[len(blocks) - 1]:
         output_decrypt_file.write((int(decrypt_text, 2).to_bytes(8, 'big')).decode())
-        # else:
-        #     decrypt_text = decrypt_text[:-int(len_of_zero, 2)]
-        #     output_decrypt_file.write((int(decrypt_text, 2).to_bytes(8, 'big')).decode())
-
-            # if int(len_of_zero, 2) <= 8:
-            #     output_decrypt_file.write((int(decrypt_text, 2).to_bytes(8, 'big')).decode())
-            # elif int(len_of_zero, 2) <= 16:
-            #     output_decrypt_file.write((int(decrypt_text, 2).to_bytes(7, 'big')).decode())
-            # elif int(len_of_zero, 2) <= 24:
-            #     output_decrypt_file.write((int(decrypt_text, 2).to_bytes(6, 'big')).decode())
-            # elif int(len_of_zero, 2) <= 32:
-            #     output_decrypt_file.write((int(decrypt_text, 2).to_bytes(5, 'big')).decode())
-            # elif int(len_of_zero, 2) <= 40:
-            #     output_decrypt_file.write((int(decrypt_text, 2).to_bytes(4, 'big')).decode())
-            # elif int(len_of_zero, 2) < 48:
-            #     output_decrypt_file.write((int(decrypt_text, 2).to_bytes(3, 'big')).decode())
-            # elif int(len_of_zero, 2) <= 56:
-            #     output_decrypt_file.write((int(decrypt_text, 2).to_bytes(2, 'big')).decode())
-            # elif int(len_of_zero, 2) < 64:
-            #     output_decrypt_file.write((int(decrypt_text, 2).to_bytes(1, 'big')).decode())
     output_decrypt_file.close()
 
 
@@ -504,10 +388,7 @@ def cipher_CBC(PATH_TEXT, PATH_KEY, PATH_ENCRY_FILE):
 
     while len(text_bits) % 64 != 0:
         text_bits += '0'
-    # print("COUNT= ", count)
-    # print(count.to_bytes(1, 'big'))
-    # ll = "{0:08b}".format(int((count.to_bytes(1, 'big')).hex(), 16))
-    # print(ll)
+
     output_encry_text = open(PATH_ENCRY_FILE, 'wb')
 
     blocks_text = division_into_blocks(text_bits, 64)
@@ -531,26 +412,18 @@ def decipher_CBC(PATH_ENCRY_FILE, PATH_KEY, PATH_DECRYPT_FILE):
     output_decrypt_file = open(PATH_DECRYPT_FILE, 'w')
     input_encry_file = open(PATH_ENCRY_FILE, 'rb')
     encryText = input_encry_file.read()
-    # print(encryText)
     encryBits = "{0:08b}".format(int(encryText.hex(), 16))
 
     iv = "1" * 64
     blocks = division_into_blocks(encryBits, 64)
-    # (int(decrypt_text, 2).to_bytes(8, 'big')).decode()
-    # output_decrypt_file.write(str(int.from_bytes(decryptFile(blocks[0], INPUT_KEY), 'big') ^ int(iv, 2)))
+
     a = int(decryptFile(blocks[0], INPUT_KEY), 2) ^ int(iv, 2)
     output_decrypt_file.write(a.to_bytes(8, 'big').decode())
     prev_encrypted_block = blocks[0]
 
     for i in range(1, len(blocks)):
-        # output_decrypt_file.write(str(int.from_bytes(decryptFile(blocks[i], INPUT_KEY), 'big') ^ int(prev_encrypted_block, 2)))
         a = int(decryptFile(blocks[i], INPUT_KEY), 2) ^ int(prev_encrypted_block, 2)
-        # if i != len(blocks) - 1:
         output_decrypt_file.write(a.to_bytes(8, 'big').decode())
-        # else:
-        #     print("qq yopta")
-        # output_decrypt_file.write(
-        #     '{0:064b}'.format(int(decryptFile(blocks[i], INPUT_KEY), 2) ^ int(prev_encrypted_block, 2)))
         prev_encrypted_block = blocks[i]
 
 
@@ -564,10 +437,6 @@ def cipher_PCBC(PATH_TEXT, PATH_KEY, PATH_ENCRY_FILE):
 
     while len(text_bits) % 64 != 0:
         text_bits += '0'
-    # print("COUNT= ", count)
-    # print(count.to_bytes(1, 'big'))
-    # ll = "{0:08b}".format(int((count.to_bytes(1, 'big')).hex(), 16))
-    # print(ll)
     output_encry_text = open(PATH_ENCRY_FILE, 'wb')
 
     blocks_text = division_into_blocks(text_bits, 64)
@@ -587,92 +456,27 @@ def cipher_PCBC(PATH_TEXT, PATH_KEY, PATH_ENCRY_FILE):
 
 
 def decipher_PCBC(PATH_ENCRY_FILE, PATH_KEY, PATH_DECRYPT_FILE):
-    # OUTPUT_ENCRY_FILE = "encry_text.txt"
     input_file_key = open(PATH_KEY, 'r')
     INPUT_KEY = input_file_key.read()
 
     output_decrypt_file = open(PATH_DECRYPT_FILE, 'w')
     input_encry_file = open(PATH_ENCRY_FILE, 'rb')
     encryText = input_encry_file.read()
-    # print(encryText)
     encryBits = "{0:08b}".format(int(encryText.hex(), 16))
 
     iv = "1" * 64
     blocks = division_into_blocks(encryBits, 64)
 
-    # output_decrypt_file.write(str(int.from_bytes(decryptFile(blocks[0], INPUT_KEY), 'big') ^ int(iv, 2)))
     a = int(decryptFile(blocks[0], INPUT_KEY), 2) ^ int(iv, 2)
     output_decrypt_file.write(a.to_bytes(8, 'big').decode())
     prev_encrypted_block = blocks[0]
     prev_decrypted_block = a
 
     for i in range(1, len(blocks)):
-        # output_decrypt_file.write(str(int.from_bytes(decryptFile(blocks[i], INPUT_KEY), 'big') ^ int(prev_encrypted_block, 2)))
         b = (int(decryptFile(blocks[i], INPUT_KEY), 2) ^ int(prev_encrypted_block, 2) ^ int(prev_decrypted_block, 2))
         output_decrypt_file.write(b.to_bytes(8, 'big').decode())
         prev_encrypted_block = blocks[i]
         prev_decrypted_block = b
-
-
-# def cipher_CFB():
-#     input_file_text = open("input_text.txt", 'r')
-#     INPUT_TEXT = input_file_text.read()
-#     text_bits = text_to_bist(INPUT_TEXT)
-#
-#     input_file_key = open("input_key.txt", 'r')
-#     INPUT_KEY = input_file_key.read()
-#
-#     while len(text_bits) % 64 != 0:
-#         text_bits += '0'
-#
-#     iv = "1" * 64
-#     blocks_text = division_into_blocks(text_bits, 64)
-#
-#     encrypted = encryptFile(iv, INPUT_KEY)
-#     fb = int(blocks_text[0], 2) ^ int.from_bytes(encrypted, 'big')
-#     print("fb = ", fb)
-#
-#     OUTPUT_ENCRY_FILE = "encry_text.txt"
-#     output_encry_text = open(OUTPUT_ENCRY_FILE, 'wb')
-#     output_encry_text.write(fb.to_bytes(8, byteorder='big'))
-#
-#     last_block_bytes = fb
-#     for i in range(1, len(blocks_text)):
-#         encry = encryptFile('{0:064b}'.format(last_block_bytes), INPUT_KEY)
-#         i_xor = int.from_bytes(encry, 'big') ^ int(blocks_text[i], 2)
-#         last_block_bytes = i_xor
-#         output_encry_text.write(i_xor.to_bytes(8, byteorder='big'))
-#
-#
-# def decipher_CFB():
-#     OUTPUT_ENCRY_FILE = "encry_text.txt"
-#     input_file_key = open("input_key.txt", 'r')
-#     INPUT_KEY = input_file_key.read()
-#
-#     output_decrypt_file = open("decrypt_text.txt", 'w')
-#
-#     input_encry_file = open(OUTPUT_ENCRY_FILE, 'rb')
-#     encryText = input_encry_file.read()
-#     encryBits = "{0:08b}".format(int(encryText.hex(), 16))
-#
-#     iv = "1" * 64
-#     blocks = division_into_blocks(encryBits, 64)
-#
-#     encrypted = encryptFile(iv, INPUT_KEY)
-#     fb = int(blocks[0], 2) ^ int.from_bytes(encrypted, 'big')
-#     print("fb = ", fb)
-#
-#     # OUTPUT_ENCRY_FILE = "encry_text.txt"
-#     # output_encry_text = open(OUTPUT_ENCRY_FILE, 'wb')
-#     # output_decrypt_file.write(fb.to_bytes(8, byteorder='big'))
-#     output_decrypt_file.write('{0:064b}'.format(fb))
-#
-#     last_block_bytes = blocks[0]
-#     for i in range(1, len(blocks)):
-#         encry = encryptFile(last_block_bytes, INPUT_KEY)
-#         i_xor = int.from_bytes(encry, 'big') ^ int(blocks[i], 2)
-#         last_block_bytes = blocks[i]
-#         output_decrypt_file.write('{0:064b}'.format(i_xor))
 
 
 if __name__ == '__main__':
@@ -689,63 +493,3 @@ if __name__ == '__main__':
         decipher_PCBC(PATH_ENCRY_FILE, PATH_KEY, PATH_DECRYPT_FILE)
     else:
         print("Выбирите 1 или 2")
-
-
-    # Чтение входного открытого текста
-    # input_file_text = open("input_text.txt", 'r')
-    # INPUT_TEXT = input_file_text.read()
-    #
-    # # Чтение ключа
-    # input_file_key = open("input_key.txt", 'r')
-    # INPUT_KEY = input_file_key.read()
-    #
-    # # Создание файла под запись шифрованного сообщения
-    # OUTPUT_ENCRY_FILE = "encry_text.txt"
-    # # output_encry_text = open(OUTPUT_ENCRY_FILE, 'wb')
-    # # INPUT_TEXT = "Blowfish"
-    # # INPUT_KEY = "abcdefc"
-    # encryText = ""
-    # chose = input("1 - Зашифровать, 2 - Расшифровать: ")
-    # if chose == "1":
-    #     OUTPUT_ENCRY_FILE = "encry_text.txt"
-    #     output_encry_text = open(OUTPUT_ENCRY_FILE, 'wb')
-    #     encryText = encryptFile(INPUT_TEXT, INPUT_KEY)
-    #     output_encry_text.write(encryText)
-    #     output_encry_text.close()
-    # elif chose == "2":
-    #     output_decrypt_file = open("decrypt_text.txt", 'w')
-    #     input_encry_file = open(OUTPUT_ENCRY_FILE, 'rb')
-    #     encryText = input_encry_file.read()
-    #     print(encryText)
-    #     decrypt_text = decryptFile(encryText, INPUT_KEY)
-    #     output_decrypt_file.write(decrypt_text)
-    #
-    # else:
-    #     print("Enter 1 or 2")
-
-
-
-
-
-    # INPUT_TEXT = "Blowfish"
-    # INPUT_KEY = "qwertyqwerty123"
-    # # Перевод текста в битувую строку
-    # text_bits = text_to_bist(INPUT_TEXT)
-    # print(int(text_bits[:32], 2))
-    # print(int(text_bits[32:], 2))
-    # # Перевод ключа в битовую строку
-    # key_bits = text_to_bist(INPUT_KEY)
-    # # Расишрение ключа
-    # new_key_bits = keyGenerator(key_bits)
-    # # Генерация новой таблицы раундовых ключей путем xor с ключем
-    # new_P_box = generateP_box(new_key_bits)
-    # print("new_P_box = ", new_P_box)
-    # # Создание новых раундовых ключей и таблицы подстановки, используя схему Фейстеля
-    # final_P_box, final_S_box = generateAllKey(new_P_box, PI_S_BOXES)
-    # print("final_P_box = ", final_P_box)
-    # print("final_S_box = ", final_S_box)
-    # encrypt_L, encrypt_R = feystel(text_bits[:32], text_bits[32:], final_P_box, final_S_box)
-    # print(encrypt_L)
-    # print(encrypt_R)
-    # print('%08x%08x' % (encrypt_L, encrypt_R))
-    # decrypt_feystel(encrypt_L, encrypt_R, final_P_box, final_S_box)
